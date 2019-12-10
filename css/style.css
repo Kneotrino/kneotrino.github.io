@@ -240,11 +240,11 @@ body.offcanvas-open .site-wrap {
   letter-spacing: .1em;
   font-size: 13px;
   top: 20px;
-  color: #000;
+  color: #fff;
 }
 
 .offcanvas-toggle:hover {
-  color: #000;
+  color: #fff;
   opacity: .7;
 }
 
