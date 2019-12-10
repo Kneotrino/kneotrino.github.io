@@ -1,4 +1,3 @@
-https://github.com/kneotrino
-https://www.hackerrank.com/kneotrino
-https://profile.codersrank.io/user/kneotrino
+hello to you my dearest reader.
 
+this is my personal information page.
