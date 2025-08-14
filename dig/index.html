@@ -1,0 +1,579 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width,initial-scale=1"/>
+    <title>Endless Downward — All Walkable + Minimap + Depth</title>
+    <style>
+        :root {
+            color-scheme: dark;
+        }
+
+        html, body {
+            margin: 0;
+            height: 100%;
+            background: #0f0f12;
+            color: #e6e6e6;
+            font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
+            overflow: hidden;
+        }
+
+        #game {
+            display: block;
+            width: 100vw;
+            height: 100vh;
+            image-rendering: pixelated;
+            outline: none;
+        }
+
+        header {
+            position: absolute;
+            top: 8px;
+            left: 8px;
+            right: 8px;
+            z-index: 10;
+            display: flex;
+            gap: 12px;
+            align-items: center;
+            pointer-events: none;
+        }
+
+        .panel {
+            pointer-events: auto;
+            background: rgba(30, 32, 40, .85);
+            border: 1px solid #2f3240;
+            border-radius: 8px;
+            padding: 8px 10px;
+            backdrop-filter: blur(6px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, .35);
+        }
+
+        .btn {
+            background: #2a2f3a;
+            border: 1px solid #3a4150;
+            color: #dfe6f0;
+            padding: 6px 10px;
+            border-radius: 6px;
+            cursor: pointer;
+        }
+
+        #hud {
+            position: absolute;
+            left: 8px;
+            bottom: 8px;
+            z-index: 10;
+            background: rgba(30, 32, 40, .85);
+            border: 1px solid #2f3240;
+            border-radius: 8px;
+            padding: 8px 10px;
+            backdrop-filter: blur(6px);
+        }
+
+        #minimapWrap {
+            position: absolute;
+            right: 8px;
+            top: 8px;
+            z-index: 10;
+            background: rgba(30, 32, 40, .85);
+            border: 1px solid #2f3240;
+            border-radius: 8px;
+            padding: 6px;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            align-items: center;
+        }
+
+        #minimap {
+            image-rendering: pixelated;
+            border: 1px solid #3a4150;
+            background: #0a0a0e;
+        }
+
+        #miniLabel {
+            font-size: 12px;
+            opacity: .8;
+        }
+    </style>
+</head>
+<body>
+<header>
+    <div class="panel"><strong>Controls:</strong> Arrow Keys or WASD to move • Shift to run • R to reset</div>
+    <div class="panel">
+        <button id="resetBtn" class="btn">Reset</button>
+    </div>
+</header>
+
+<div id="hud">Depth: <span id="depthText">0</span></div>
+
+<div id="minimapWrap">
+    <canvas id="minimap" width="160" height="120" aria-label="Minimap"></canvas>
+    <div id="miniLabel">Minimap</div>
+</div>
+
+<canvas id="game" tabindex="0" aria-label="Endless Zelda-style — all walkable"></canvas>
+
+<script>
+    (() => {
+        // ===== Config =====
+        const TILE_SIZE = 24;        // main view tile size
+        const MAP_W = 40;            // world width in tiles (fixed)
+        const CHUNK_ROWS = 12;       // rows appended when nearing bottom
+        const STEP_TIME = 120;       // ms per tile step
+        const RUN_MULTIPLIER = 0.6;  // running speed factor
+        const CAMERA_LERP = 0.18;    // camera smoothing
+        const THEME_DEPTH_INTERVAL = 100; // change theme every 100 downward steps
+
+        // ===== Terrain and Themes =====
+        // tile ids: 0 floor, 2 grass, 3 water — all are walkable for this request
+        const DECOR_CHANCE = 0.06;
+        const THEMES = [
+            {
+                floor: ["#20314a", "#223652", "#1e2c44"],
+                grass: ["#1f3b2a", "#23452f", "#1b3323"],
+                water: ["#0f2a3a", "#113046", "#0d2332"],
+                accent: "#9ad1ff"
+            },
+            {
+                floor: ["#3a2a2a", "#423232", "#2f2121"],
+                grass: ["#3b4a1f", "#455522", "#2e3b18"],
+                water: ["#1a2a3f", "#1d3350", "#15273a"],
+                accent: "#ffd59a"
+            },
+            {
+                floor: ["#2c2f3a", "#303447", "#262a3a"],
+                grass: ["#234d35", "#27583d", "#1e3d2c"],
+                water: ["#0b2a2f", "#0e323a", "#0a2330"],
+                accent: "#9affd1"
+            },
+            {
+                floor: ["#2f2f2f", "#323232", "#292929"],
+                grass: ["#3a3f2a", "#464c33", "#313622"],
+                water: ["#1a2630", "#1d2c39", "#14202b"],
+                accent: "#c9a7ff"
+            },
+            {
+                floor: ["#3a2f1f", "#433524", "#2e2519"],
+                grass: ["#4b3f1f", "#564825", "#3b311a"],
+                water: ["#1a2a2a", "#1d3030", "#142020"],
+                accent: "#ffa7c9"
+            }
+        ];
+
+        function pickTheme() {
+            return THEMES[(Math.random() * THEMES.length) | 0];
+        }
+
+        let currentTheme = pickTheme();
+
+        // ===== Map storage (dynamic height) =====
+        const mapRows = []; // each row: Uint8Array length MAP_W (0/2/3)
+        const explored = []; // boolean per tile to render minimap
+        function ensureRow(y) {
+            while (y >= mapRows.length) {
+                mapRows.push(new Uint8Array(MAP_W)); // defaults to 0 floor
+                explored.push(new Uint8Array(MAP_W)); // defaults to 0 (false)
+            }
+        }
+
+        function getTile(x, y) {
+            return (x >= 0 && x < MAP_W && y >= 0 && y < mapRows.length) ? mapRows[y][x] : 0;
+        }
+
+        function setTile(x, y, v) {
+            if (y < 0 || x < 0 || x >= MAP_W) return;
+            ensureRow(y);
+            mapRows[y][x] = v;
+        }
+
+        function setExplored(x, y) {
+            if (y >= 0 && y < explored.length && x >= 0 && x < MAP_W) explored[y][x] = 1;
+        }
+
+        // Random utilities
+        function randInt(a, b) {
+            return (Math.random() * (b - a + 1) | 0) + a;
+        }
+
+        // Biome sprinkle: mix of floor, grass, water (all walkable)
+        function sprinkle(yStart, yEnd) {
+            for (let y = yStart; y <= yEnd; y++) {
+                ensureRow(y);
+                for (let x = 0; x < MAP_W; x++) {
+                    const r = Math.random();
+                    if (r < 0.10) setTile(x, y, 2);     // grass
+                    else if (r < 0.16) setTile(x, y, 3); // water (still walkable per request)
+                    else setTile(x, y, 0);               // floor
+                }
+            }
+        }
+
+        function carveRect(x, y, w, h, tile = 0) {
+            for (let yy = y; yy < y + h; yy++) {
+                ensureRow(yy);
+                for (let xx = x; xx < x + w; xx++) {
+                    if (xx >= 0 && xx < MAP_W) mapRows[yy][xx] = tile;
+                }
+            }
+        }
+
+        function generateSlice(yStart, rowsCount) {
+            const yEnd = yStart + rowsCount - 1;
+            // start as floor
+            for (let y = yStart; y <= yEnd; y++) {
+                ensureRow(y);
+                for (let x = 0; x < MAP_W; x++) setTile(x, y, 0);
+            }
+            // add a few grass patches (visual variety)
+            for (let i = 0; i < 4; i++) {
+                const w = randInt(5, 12), h = randInt(4, 8);
+                const x = randInt(1, Math.max(1, MAP_W - w - 2));
+                const y = randInt(yStart + 1, Math.max(yStart + 1, yEnd - h - 1));
+                carveRect(x, y, w, h, 2);
+            }
+            // sprinkle noise including water
+            sprinkle(yStart, yEnd);
+
+            // return spawn candidates
+            const spawns = [];
+            for (let i = 0; i < 40; i++) {
+                const x = randInt(2, MAP_W - 3);
+                const y = randInt(yStart + 1, yEnd - 1);
+                spawns.push({x, y});
+            }
+            return {yStart, yEnd, spawns};
+        }
+
+        // Bootstrap world
+        const initial = generateSlice(0, 40);
+
+        // ===== Player and movement =====
+        const player = {
+            x: 2, y: 2, sx: 2, sy: 2,
+            px: 2, py: 2,
+            facing: "down",
+            moving: false,
+            stepStart: 0,
+            stepDuration: STEP_TIME,
+            fromX: 2, fromY: 2,
+            toX: 2, toY: 2
+        };
+
+        // Place spawn
+        (function placeSpawn() {
+            const cands = initial.spawns.length ? initial.spawns : [{x: 3, y: 3}];
+            const s = cands[(Math.random() * cands.length) | 0];
+            player.x = player.sx = player.px = player.fromX = player.toX = s.x;
+            player.y = player.sy = player.py = player.fromY = player.toY = s.y;
+        })();
+
+        // Input
+        const keys = new Set();
+        let runHeld = false;
+        addEventListener("keydown", e => {
+            if (["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight", " "].includes(e.key)) e.preventDefault();
+            if (["w", "a", "s", "d", "W", "A", "S", "D"].includes(e.key)) e.preventDefault();
+            keys.add(e.key);
+            runHeld = e.shiftKey;
+        }, {passive: false});
+        addEventListener("keyup", e => {
+            keys.delete(e.key);
+            runHeld = e.shiftKey;
+        });
+
+        document.getElementById("resetBtn").addEventListener("click", resetGame);
+
+        // Canvas setup
+        const canvas = document.getElementById("game");
+        const ctx = canvas.getContext("2d");
+
+        function resize() {
+            canvas.width = Math.floor(innerWidth);
+            canvas.height = Math.floor(innerHeight);
+        }
+
+        addEventListener("resize", resize);
+        resize();
+
+        // Minimap setup
+        const mini = document.getElementById("minimap");
+        const miniCtx = mini.getContext("2d");
+        const MINI_TILE = 2; // pixels per tile on minimap
+        function ensureMinimapHeight() {
+            const needed = Math.max(mini.height, (mapRows.length + 2) * MINI_TILE);
+            if (needed > mini.height) {
+                // Resize keeps content; we’ll redraw fully each time anyway
+                mini.height = needed;
+            }
+        }
+
+        // Camera
+        const camera = {x: (player.x + 0.5) * TILE_SIZE, y: (player.y + 0.5) * TILE_SIZE};
+
+        // Depth and theme switching
+        let depth = 0; // count of downward steps taken since spawn
+        const depthText = document.getElementById("depthText");
+
+        function updateDepthAndTheme(dy) {
+            if (dy > 0) {
+                depth += 1;
+                depthText.textContent = depth.toString();
+                if (depth % THEME_DEPTH_INTERVAL === 0) {
+                    currentTheme = pickTheme();
+                }
+            }
+        }
+
+        function resetGame() {
+            keys.clear();
+            player.x = player.sx;
+            player.y = player.sy;
+            player.px = player.x;
+            player.py = player.y;
+            player.fromX = player.toX = player.x;
+            player.fromY = player.toY = player.y;
+            player.moving = false;
+            camera.x = (player.x + 0.5) * TILE_SIZE;
+            camera.y = (player.y + 0.5) * TILE_SIZE;
+            depth = 0;
+            depthText.textContent = "0";
+            currentTheme = pickTheme();
+        }
+
+        function maybeExtendWorld(targetY) {
+            const buffer = 6;
+            const bottom = mapRows.length - 1;
+            if (targetY >= bottom - buffer) {
+                const start = mapRows.length;
+                generateSlice(start, CHUNK_ROWS);
+                ensureMinimapHeight();
+            }
+        }
+
+        function tryMove(dx, dy) {
+            if (player.moving) return;
+            const nx = player.x + dx;
+            const ny = player.y + dy;
+            maybeExtendWorld(ny);
+            // All terrain is walkable
+            player.moving = true;
+            player.stepStart = performance.now();
+            player.stepDuration = STEP_TIME * (runHeld ? RUN_MULTIPLIER : 1);
+            player.fromX = player.x;
+            player.fromY = player.y;
+            player.toX = nx;
+            player.toY = ny;
+            player.x = nx;
+            player.y = ny;
+
+            updateDepthAndTheme(dy);
+        }
+
+        function handleInput() {
+            let dx = 0, dy = 0;
+            if (keys.has("ArrowUp") || keys.has("w") || keys.has("W")) {
+                dy = -1;
+                player.facing = "up";
+            } else if (keys.has("ArrowDown") || keys.has("s") || keys.has("S")) {
+                dy = 1;
+                player.facing = "down";
+            } else if (keys.has("ArrowLeft") || keys.has("a") || keys.has("A")) {
+                dx = -1;
+                player.facing = "left";
+            } else if (keys.has("ArrowRight") || keys.has("d") || keys.has("D")) {
+                dx = 1;
+                player.facing = "right";
+            }
+            if (dx !== 0 || dy !== 0) tryMove(dx, dy);
+            if (keys.has("r") || keys.has("R")) resetGame();
+        }
+
+        // Easing
+        function easeOutQuad(t) {
+            return 1 - (1 - t) * (1 - t);
+        }
+
+        // ===== Rendering =====
+        function drawTile(x, y, t) {
+            const px = x * TILE_SIZE, py = y * TILE_SIZE;
+            const floor = currentTheme.floor, grass = currentTheme.grass, water = currentTheme.water;
+            if (t === 3) {
+                ctx.fillStyle = water[(x + y) % water.length];
+                ctx.fillRect(px, py, TILE_SIZE, TILE_SIZE);
+                // subtle ripples
+                ctx.globalAlpha = 0.3;
+                ctx.fillStyle = currentTheme.accent;
+                ctx.fillRect(px + 6, py + 6, 2, 2);
+                ctx.fillRect(px + 14, py + 10, 2, 2);
+                ctx.globalAlpha = 1;
+                return;
+            }
+            if (t === 2) {
+                ctx.fillStyle = grass[(x + 2 * y) % grass.length];
+                ctx.fillRect(px, py, TILE_SIZE, TILE_SIZE);
+                if (((x * 31 + y * 17) % 100) / 100 < DECOR_CHANCE) {
+                    ctx.fillStyle = "#2bdc72";
+                    ctx.fillRect(px + 8, py + 5, 2, 2);
+                    ctx.fillRect(px + 12, py + 9, 2, 2);
+                }
+                return;
+            }
+            // floor
+            ctx.fillStyle = floor[(x + y) % floor.length];
+            ctx.fillRect(px, py, TILE_SIZE, TILE_SIZE);
+            ctx.globalAlpha = 0.06;
+            ctx.fillStyle = "#000";
+            if (((x + y) & 1) === 0) ctx.fillRect(px, py, TILE_SIZE, TILE_SIZE);
+            ctx.globalAlpha = 1;
+        }
+
+        function drawPlayer(px, py, time) {
+            // stylized hero
+            ctx.fillStyle = "#d9b38c"; // head
+            ctx.fillRect(px + 8, py + 5, 8, 8);
+            ctx.fillStyle = "#3dbb4a"; // hat
+            if (player.facing === "up") {
+                ctx.fillRect(px + 6, py + 4, 12, 4);
+                ctx.fillRect(px + 7, py + 5, 10, 3);
+            } else if (player.facing === "down") {
+                ctx.fillRect(px + 6, py + 3, 12, 4);
+                ctx.fillRect(px + 7, py + 4, 10, 2);
+            } else if (player.facing === "left") {
+                ctx.fillRect(px + 6, py + 4, 10, 4);
+            } else {
+                ctx.fillRect(px + 8, py + 4, 10, 4);
+            }
+            ctx.fillStyle = "#2f6b3a"; // tunic
+            ctx.fillRect(px + 6, py + 13, 12, 9);
+            ctx.fillStyle = "#af853f"; // belt
+            ctx.fillRect(px + 6, py + 18, 12, 2);
+            ctx.fillStyle = "#2d3a6b"; // legs
+            const stepPhase = Math.sin(time * 0.02 + (player.x + player.y)) * (player.moving ? 1 : 0);
+            ctx.fillRect(px + 7, py + 22 + (stepPhase > 0 ? 0 : 1), 4, 6);
+            ctx.fillRect(px + 13, py + 22 + (stepPhase < 0 ? 0 : 1), 4, 6);
+            // shadow
+            ctx.globalAlpha = 0.25;
+            ctx.fillStyle = "#000";
+            ctx.beginPath();
+            ctx.ellipse(px + TILE_SIZE / 2, py + TILE_SIZE - 2, 7, 3, 0, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.globalAlpha = 1;
+        }
+
+        function renderMinimap() {
+            // adjust height if needed
+            ensureMinimapHeight();
+            // redraw explored area
+            miniCtx.clearRect(0, 0, mini.width, mini.height);
+            const floor = currentTheme.floor, grass = currentTheme.grass, water = currentTheme.water;
+
+            for (let y = 0; y < mapRows.length; y++) {
+                const rowExplored = explored[y];
+                if (!rowExplored) continue;
+                for (let x = 0; x < MAP_W; x++) {
+                    if (!rowExplored[x]) continue;
+                    const t = mapRows[y][x];
+                    let color;
+                    if (t === 3) color = water[(x + y) % water.length];
+                    else if (t === 2) color = grass[(x + 2 * y) % grass.length];
+                    else color = floor[(x + y) % floor.length];
+                    miniCtx.fillStyle = color;
+                    miniCtx.fillRect(x * MINI_TILE, y * MINI_TILE, MINI_TILE, MINI_TILE);
+                }
+            }
+            // player marker
+            miniCtx.fillStyle = "#ffffff";
+            miniCtx.fillRect(player.x * MINI_TILE, player.y * MINI_TILE, MINI_TILE, MINI_TILE);
+        }
+
+        // ===== Main Loop =====
+        let last = performance.now();
+        let time = 0;
+
+        function update(dt) {
+            handleInput();
+
+            // track explored tile under/around player
+            setExplored(player.x, player.y);
+
+            // step animation
+            if (player.moving) {
+                const now = performance.now();
+                const t = Math.min(1, (now - player.stepStart) / player.stepDuration);
+                const k = easeOutQuad(t);
+                player.px = player.fromX + (player.toX - player.fromX) * k;
+                player.py = player.fromY + (player.toY - player.fromY) * k;
+                if (t >= 1) {
+                    player.moving = false;
+                    player.px = player.toX;
+                    player.py = player.toY;
+                }
+            } else {
+                player.px = player.x;
+                player.py = player.y;
+            }
+
+            // camera follow
+            const targetX = (player.px + 0.5) * TILE_SIZE;
+            const targetY = (player.py + 0.5) * TILE_SIZE;
+            camera.x += (targetX - camera.x) * CAMERA_LERP;
+            camera.y += (targetY - camera.y) * CAMERA_LERP;
+        }
+
+        function render() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            // visible bounds
+            const halfW = canvas.width / 2, halfH = canvas.height / 2;
+            const camTileX = camera.x / TILE_SIZE;
+            const camTileY = camera.y / TILE_SIZE;
+            const startX = Math.max(0, Math.floor(camTileX - halfW / TILE_SIZE) - 2);
+            const endX = Math.min(MAP_W, Math.ceil(camTileX + halfW / TILE_SIZE) + 2);
+            const startY = Math.max(0, Math.floor(camTileY - halfH / TILE_SIZE) - 2);
+            const endY = Math.min(mapRows.length, Math.ceil(camTileY + halfH / TILE_SIZE) + 2);
+
+            ctx.save();
+            ctx.translate(halfW - camera.x, halfH - camera.y);
+
+            // draw map tiles
+            for (let y = startY; y < endY; y++) {
+                for (let x = startX; x < endX; x++) {
+                    drawTile(x, y, getTile(x, y));
+                }
+            }
+
+            // player
+            drawPlayer(player.px * TILE_SIZE, player.py * TILE_SIZE, time);
+
+            ctx.restore();
+
+            // vignette
+            const g = ctx.createRadialGradient(canvas.width / 2, canvas.height / 2, Math.min(canvas.width, canvas.height) * 0.1,
+                canvas.width / 2, canvas.height / 2, Math.max(canvas.width, canvas.height) * 0.7);
+            g.addColorStop(0, "rgba(0,0,0,0)");
+            g.addColorStop(1, "rgba(0,0,0,0.45)");
+            ctx.fillStyle = g;
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            // minimap render
+            renderMinimap();
+        }
+
+        function frame(now) {
+            const dt = Math.min(50, now - last);
+            last = now;
+            time += dt;
+            update(dt);
+            render();
+            requestAnimationFrame(frame);
+        }
+
+        // Initial setup
+        requestAnimationFrame(frame);
+        setTimeout(() => canvas.focus(), 50);
+        ensureRow(0); // ensure arrays exist
+        ensureMinimapHeight();
+    })();
+</script>
+</body>
+</html>
