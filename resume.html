@@ -1,100 +1,654 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
-  <head>
-    <title>Kneotrino Profile</title>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Neutrino Kusrorong - Senior Backend Engineer</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
 
-    <link href="https://fonts.googleapis.com/css?family=Open+Sans:300,400,700,800|Playfair+Display:,300, 400, 700" rel="stylesheet">
+        :root {
+            --primary: #2563eb;
+            --primary-dark: #1d4ed8;
+            --secondary: #64748b;
+            --accent: #f59e0b;
+            --text-dark: #1e293b;
+            --text-light: #64748b;
+            --bg-light: #f8fafc;
+            --white: #ffffff;
+            --gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
 
-    <link rel="stylesheet" href="css/bootstrap.css">
-    <link rel="stylesheet" href="css/animate.css">
-    <link rel="stylesheet" href="css/owl.carousel.min.css">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/mediaelement@4.2.7/build/mediaelementplayer.min.css">
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: var(--text-dark);
+            scroll-behavior: smooth;
+        }
 
-    <link rel="stylesheet" href="fonts/ionicons/css/ionicons.min.css">
-    <link rel="stylesheet" href="fonts/fontawesome/css/font-awesome.min.css">
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 2rem;
+        }
 
+        /* Header */
+        header {
+            background: var(--gradient);
+            color: white;
+            padding: 4rem 0;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
 
-    <!-- Theme Style -->
-    <link rel="stylesheet" href="css/style.css">
-  </head>
-  <body>
-    
-    <div class="site-wrap">
+        header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 100" fill="white" opacity="0.1"><polygon points="0,0 1000,100 1000,0"/></svg>');
+            background-size: cover;
+        }
 
-      <a href="#" class="offcanvas-toggle js-offcanvas-toggle fa fa-bars">NAVIGATION</a>
-      <div class="offcanvas_menu" id="offcanvas_menu">
-        <ul class="mb-5">
-          <li><a href="index.html">Who am i?</a></li>
-          <li><a href="portfolio.html">Portfolio</a></li>
-          <li><a href="reference.html">Reference</a></li>
-          <li class="active"><a href="resume.html">Resume</a></li>
-        </ul>
+        .hero-content {
+            position: relative;
+            z-index: 1;
+        }
 
-        <ul class="social">
-          <li><a href="https://github.com/Kneotrino" class="fa fa-github"></a></li>
-          <li><a href="https://www.linkedin.com/in/kneotrino/" target="_blank" class="fa fa-linkedin"></a></li>
-          <li><a href="https://www.instagram.com/neutrinosbk/" target="_blank" class="fa fa-instagram"></a></li>
-        </ul>
+        .profile-img {
+            width: 150px;
+            height: 150px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.2);
+            margin: 0 auto 2rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 4rem;
+            backdrop-filter: blur(10px);
+            border: 3px solid rgba(255,255,255,0.3);
+        }
 
-</br><!-- Link back to Colorlib can't be removed. Template is licensed under CC BY 3.0. -->
-Copyright &copy;<script>document.write(new Date().getFullYear());</script> All rights reserved | This template is made with <i class="fa fa-heart-o" aria-hidden="true"></i> by <a href="https://colorlib.com" target="_blank">Colorlib</a>
-<!-- Link back to Colorlib can't be removed. Template is licensed under CC BY 3.0. -->
+        h1 {
+            font-size: 3rem;
+            margin-bottom: 0.5rem;
+            font-weight: 700;
+        }
 
-      </div>
-      
-      <aside style="background-image: url(img/profile_resume.jpg);"></aside>
-      <main>
-        <h1 class="mb-5">Experience</h1>
-        <div class="mb-5">
-          <ul class="resume-list">
-            <li>
-              <h3>Java Developer, PT. Indonesia Fintopia Technology</h3>
-              <p class="date">August 2019 - Present</p>
-            </li>
-            <li>
-              <h3>IT Support, CV. Usaha Karya Buana</h3>
-              <p class="date">April 2018 - Feb 2019</p>
-            </li>
-            <li>
-              <h3>Android Developer, Freelancer</h3>
-              <p class="date">February 2016 - December 2018</p>
-            </li>
-            <li>
-              <h3>Web Developer, Hay Rental Mobil Kupang</h3>
-              <p class="date">April 2019 - June 2019</p>
-            </li>
-          </ul>
+        .subtitle {
+            font-size: 1.25rem;
+            margin-bottom: 1rem;
+            opacity: 0.9;
+        }
+
+        .tagline {
+            font-size: 1.1rem;
+            font-style: italic;
+            opacity: 0.8;
+            margin-bottom: 2rem;
+        }
+
+        .contact-links {
+            display: flex;
+            justify-content: center;
+            gap: 1.5rem;
+            flex-wrap: wrap;
+        }
+
+        .contact-links a {
+            color: white;
+            text-decoration: none;
+            padding: 0.75rem 1.5rem;
+            border: 2px solid rgba(255,255,255,0.3);
+            border-radius: 50px;
+            backdrop-filter: blur(10px);
+            transition: all 0.3s ease;
+        }
+
+        .contact-links a:hover {
+            background: rgba(255,255,255,0.2);
+            transform: translateY(-2px);
+        }
+
+        /* Navigation */
+        nav {
+            background: var(--white);
+            padding: 1rem 0;
+            box-shadow: 0 2px 20px rgba(0,0,0,0.1);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .nav-links {
+            display: flex;
+            justify-content: center;
+            gap: 2rem;
+            flex-wrap: wrap;
+        }
+
+        .nav-links a {
+            color: var(--text-dark);
+            text-decoration: none;
+            padding: 0.5rem 1rem;
+            border-radius: 25px;
+            transition: all 0.3s ease;
+            font-weight: 500;
+        }
+
+        .nav-links a:hover {
+            background: var(--primary);
+            color: white;
+            transform: translateY(-2px);
+        }
+
+        /* Sections */
+        .section {
+            padding: 4rem 0;
+        }
+
+        .section:nth-child(even) {
+            background: var(--bg-light);
+        }
+
+        .section-title {
+            text-align: center;
+            font-size: 2.5rem;
+            margin-bottom: 3rem;
+            position: relative;
+        }
+
+        .section-title::after {
+            content: '';
+            position: absolute;
+            bottom: -10px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 80px;
+            height: 4px;
+            background: var(--gradient);
+            border-radius: 2px;
+        }
+
+        /* Experience */
+        .experience-item, .project-item {
+            background: white;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            transition: transform 0.3s ease;
+        }
+
+        .experience-item:hover, .project-item:hover {
+            transform: translateY(-5px);
+        }
+
+        .job-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: start;
+            margin-bottom: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .job-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--primary);
+        }
+
+        .company {
+            font-size: 1.2rem;
+            color: var(--secondary);
+            margin-bottom: 0.5rem;
+        }
+
+        .duration {
+            background: var(--gradient);
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 25px;
+            font-size: 0.9rem;
+            font-weight: 500;
+        }
+
+        /* Skills */
+        .skills-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 2rem;
+        }
+
+        .skill-category {
+            background: white;
+            padding: 2rem;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+
+        .skill-category h3 {
+            color: var(--primary);
+            margin-bottom: 1rem;
+            font-size: 1.3rem;
+        }
+
+        .skill-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }
+
+        .skill-tag {
+            background: var(--gradient);
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 25px;
+            font-size: 0.9rem;
+            font-weight: 500;
+        }
+
+        /* Projects */
+        .projects-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 2rem;
+        }
+
+        .project-title {
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: var(--primary);
+            margin-bottom: 0.5rem;
+        }
+
+        .project-tools {
+            color: var(--accent);
+            font-weight: 600;
+            margin-bottom: 1rem;
+        }
+
+        /* Certifications */
+        .cert-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+        }
+
+        .cert-item {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 15px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+            border-left: 5px solid var(--accent);
+        }
+
+        .cert-title {
+            font-weight: 700;
+            color: var(--primary);
+            margin-bottom: 0.5rem;
+        }
+
+        /* Education */
+        .education-item {
+            background: white;
+            padding: 2rem;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+
+        .degree {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--primary);
+            margin-bottom: 0.5rem;
+        }
+
+        .university {
+            color: var(--secondary);
+            font-size: 1.1rem;
+            margin-bottom: 1rem;
+        }
+
+        /* Footer */
+        footer {
+            background: var(--text-dark);
+            color: white;
+            text-align: center;
+            padding: 2rem 0;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .container {
+                padding: 0 1rem;
+            }
+
+            h1 {
+                font-size: 2.5rem;
+            }
+
+            .job-header {
+                flex-direction: column;
+                gap: 0.5rem;
+            }
+
+            .nav-links {
+                gap: 1rem;
+            }
+
+            .contact-links {
+                gap: 1rem;
+            }
+
+            .projects-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Animations */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .experience-item, .project-item, .skill-category, .cert-item {
+            animation: fadeInUp 0.6s ease-out;
+        }
+    </style>
+</head>
+<body>
+<!-- Header -->
+<header>
+    <div class="container">
+        <div class="hero-content">
+            <div class="profile-img">NK</div>
+            <h1>Neutrino Kusrorong</h1>
+            <div class="subtitle">Senior Backend Engineer</div>
+            <div class="tagline">"Transforming finance with technology: where innovation meets opportunity"</div>
+            <div class="contact-links">
+                <a href="mailto:kneotrino@yahoo.com">📧 Email</a>
+                <a href="https://linkedin.com/in/kneotrino" target="_blank">💼 LinkedIn</a>
+                <a href="https://kneotrino.github.io/" target="_blank">🌐 Website</a>
+                <a href="https://shorturl.at/drJOZ" target="_blank">🏆 Google Certificate</a>
+            </div>
         </div>
-
-
-        <h1 class="mb-5">Education</h1>
-        <div class="mb-5">
-          <ul class="resume-list">
-            <li>
-              <h3>University Of Nusa Cendana</h3>
-              <H4>Bachelor Of Computer, Major In Computer Science</H4>
-              <p>Graduate with distinction <i>(Cum Laude)</i> with cumulative  GPA 3.54 of maximum 4.00. </p>
-              <p class="date">2013 - 2018</p>
-            </li>
-            
-          </ul>
-        </div>
-        
-      </main>
     </div>
+</header>
 
-    <!-- loader -->
-    <div id="loader" class="show fullscreen"><svg class="circular" width="48px" height="48px"><circle class="path-bg" cx="24" cy="24" r="22" fill="none" stroke-width="4" stroke="#eeeeee"/><circle class="path" cx="24" cy="24" r="22" fill="none" stroke-width="4" stroke-miterlimit="10" stroke="#f4b214"/></svg></div>
+<!-- Navigation -->
+<nav>
+    <div class="container">
+        <div class="nav-links">
+            <a href="#experience">Experience</a>
+            <a href="#skills">Skills</a>
+            <a href="#projects">Projects</a>
+            <a href="#certifications">Certifications</a>
+            <a href="#education">Education</a>
+        </div>
+    </div>
+</nav>
 
-    <script src="js/jquery-3.2.1.min.js"></script>
-    <script src="js/popper.min.js"></script>
-    <script src="js/bootstrap.min.js"></script>
-    <script src="js/owl.carousel.min.js"></script>
-    <script src="js/jquery.waypoints.min.js"></script>
-    <script src="js/jquery.countdown.min.js"></script>
-    <script src="js/main.js"></script>
+<!-- Experience Section -->
+<section id="experience" class="section">
+    <div class="container">
+        <h2 class="section-title">Professional Experience</h2>
 
-  </body>
+        <div class="experience-item">
+            <div class="job-header">
+                <div>
+                    <div class="job-title">Team Lead Full-Stack Developer</div>
+                    <div class="company">Boost Indonesia</div>
+                </div>
+                <div class="duration">May 2021 - Present</div>
+            </div>
+            <p>Leading the entire software development lifecycle, from conception to deployment, focusing on designing and implementing internet-scale systems and services. Integrating third-party systems for reporting and KYC functionalities while simplifying complex problems into efficient solutions within core systems. Closely monitoring project progress to ensure high-quality delivery and engaging with business units to align IT solutions with business objectives.</p>
+        </div>
+
+        <div class="experience-item">
+            <div class="job-header">
+                <div>
+                    <div class="job-title">Java Developer</div>
+                    <div class="company">PT Indonesia Fintopia Technology</div>
+                </div>
+                <div class="duration">Aug 2019 - May 2021</div>
+            </div>
+            <p>Collaborated on backend development at Easycash, focusing on resolving bugs and optimizing code for improved memory and processing efficiency. Participated in problem-solving discussions and code reviews to ensure high-quality solutions. Contributed throughout the development lifecycle, writing well-designed, testable code aligned with project requirements and industry standards.</p>
+        </div>
+    </div>
+</section>
+
+<!-- Skills Section -->
+<section id="skills" class="section">
+    <div class="container">
+        <h2 class="section-title">Technical Skills</h2>
+        <div class="skills-grid">
+            <div class="skill-category">
+                <h3>Programming Languages</h3>
+                <div class="skill-tags">
+                    <span class="skill-tag">Java</span>
+                    <span class="skill-tag">Golang</span>
+                    <span class="skill-tag">JavaScript</span>
+                    <span class="skill-tag">Python</span>
+                </div>
+            </div>
+
+            <div class="skill-category">
+                <h3>Frameworks & Technologies</h3>
+                <div class="skill-tags">
+                    <span class="skill-tag">Spring Boot</span>
+                    <span class="skill-tag">Hibernate</span>
+                    <span class="skill-tag">Node.js</span>
+                    <span class="skill-tag">React</span>
+                    <span class="skill-tag">Vue.js</span>
+                    <span class="skill-tag">Next.js</span>
+                </div>
+            </div>
+
+            <div class="skill-category">
+                <h3>Cloud & DevOps</h3>
+                <div class="skill-tags">
+                    <span class="skill-tag">Google Cloud Platform</span>
+                    <span class="skill-tag">Kubernetes</span>
+                    <span class="skill-tag">Docker</span>
+                    <span class="skill-tag">CI/CD</span>
+                    <span class="skill-tag">Git</span>
+                </div>
+            </div>
+
+            <div class="skill-category">
+                <h3>Databases & Messaging</h3>
+                <div class="skill-tags">
+                    <span class="skill-tag">MySQL</span>
+                    <span class="skill-tag">SQL Server</span>
+                    <span class="skill-tag">NoSQL</span>
+                    <span class="skill-tag">Redis</span>
+                    <span class="skill-tag">Kafka</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Projects Section -->
+<section id="projects" class="section">
+    <div class="container">
+        <h2 class="section-title">Key Projects</h2>
+        <div class="projects-grid">
+
+            <div class="project-item">
+                <div class="project-title">PUSDAFIL 2.0 AUTO REPORTING</div>
+                <div class="project-tools">Golang • GCP • Fiber • MySQL • SQL Server • Kafka</div>
+                <p>Developed an advanced auto-reporting system improving data processing efficiency. Leveraged GCP to enhance scalability and reliability of the reporting infrastructure.</p>
+            </div>
+
+            <div class="project-item">
+                <div class="project-title">LENDER WEB APPLICATION</div>
+                <div class="project-tools">Golang • Fiber • MySQL • Kafka • Next.js • Node.js</div>
+                <p>Created a dynamic lender web application enhancing user experience and system performance. Implemented Kafka for real-time data streaming and processing.</p>
+            </div>
+
+            <div class="project-item">
+                <div class="project-title">CORE FINANCIAL PRODUCT REVAMP</div>
+                <div class="project-tools">Java • Spring • GCP • MySQL • MyBatis • Redis</div>
+                <p>Successfully revamped the core financial product enhancing system capabilities and performance. Integrated GCP to support cloud-native architecture.</p>
+            </div>
+
+            <div class="project-item">
+                <div class="project-title">INTERNAL CREDIT SCORE APPLICATION</div>
+                <div class="project-tools">Java • Spring Boot • MySQL • React • Node.js</div>
+                <p>Created an internal credit score application enhancing credit assessment accuracy and speed with a comprehensive scoring calculation system.</p>
+            </div>
+
+            <div class="project-item">
+                <div class="project-title">KYC INTEGRATION SYSTEM</div>
+                <div class="project-tools">Java • Spring Boot • MySQL</div>
+                <p>Implemented robust KYC integration for new customers ensuring compliance with regulatory standards and seamless onboarding process.</p>
+            </div>
+
+            <div class="project-item">
+                <div class="project-title">REGULATOR REPORTING FOR OJK</div>
+                <div class="project-tools">Java • Spring Boot • MySQL • Redis • React • Node.js</div>
+                <p><strong>Achievement:</strong> Saved hundreds of work-hours across multiple divisions by automating the reporting process, significantly reducing manual effort.</p>
+            </div>
+
+        </div>
+    </div>
+</section>
+
+<!-- Certifications Section -->
+<section id="certifications" class="section">
+    <div class="container">
+        <h2 class="section-title">Certifications</h2>
+        <div class="cert-grid">
+
+            <div class="cert-item">
+                <div class="cert-title">Deploy Kubernetes Applications on Google Cloud</div>
+                <div class="cert-provider">Google Cloud</div>
+                <p><strong>Skills:</strong> Artifact Registry, Container, Docker, GKE</p>
+            </div>
+
+            <div class="cert-item">
+                <div class="cert-title">Develop Serverless Apps with Firebase</div>
+                <div class="cert-provider">Google Cloud</div>
+                <p><strong>Skills:</strong> Cloud Computing, Cloud Applications, GCP, Cloud Storage</p>
+            </div>
+
+            <div class="cert-item">
+                <div class="cert-title">Prompt Design in Vertex AI</div>
+                <div class="cert-provider">Google Cloud</div>
+                <p><strong>Skills:</strong> AI, Prompt Design, Prompt Engineering, Multimodal Prompting, Gemini APIs</p>
+            </div>
+
+            <div class="cert-item">
+                <div class="cert-title">Use Machine Learning APIs on Google Cloud</div>
+                <div class="cert-provider">Google Cloud</div>
+                <p><strong>Skills:</strong> BigQuery, Cloud Natural Language API, Cloud Vision API, Machine Learning</p>
+            </div>
+
+            <div class="cert-item">
+                <div class="cert-title">ISO 27001 Internal Audit Certification</div>
+                <div class="cert-provider">Information Security</div>
+                <p>Demonstrating high level of expertise and commitment to information security standards.</p>
+            </div>
+
+        </div>
+    </div>
+</section>
+
+<!-- Education Section -->
+<section id="education" class="section">
+    <div class="container">
+        <h2 class="section-title">Education & Publications</h2>
+
+        <div class="education-item">
+            <div class="degree">Bachelor of Science: Computer Science</div>
+            <div class="university">Universitas Nusa Cendana, Kupang, Nusa Tenggara Timur</div>
+            <div style="color: var(--accent); font-weight: bold; margin-bottom: 1rem;">GPA: 3.54 (Cum Laude) • 2013 - 2018</div>
+            <div style="margin-bottom: 1rem;">
+                <strong>Activities:</strong> Student Executive Board, Climate Change Organization, Indonesia-Timor Leste Border Community Service Program
+            </div>
+
+            <div style="background: var(--bg-light); padding: 1.5rem; border-radius: 10px; margin-top: 2rem;">
+                <h4 style="color: var(--primary); margin-bottom: 0.5rem;">📄 Publication</h4>
+                <p><strong>"Comparative Analysis of Machine Learning In Classification of Non-Active Labor Force"</strong><br>
+                    Published in J-ICON (2019)</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Footer -->
+<footer>
+    <div class="container">
+        <p>&copy; 2024 Neutrino Kusrorong. All rights reserved.</p>
+        <p>📍 Pancoran, South Jakarta | 🌐 Available for exciting opportunities</p>
+    </div>
+</footer>
+
+<script>
+    // Smooth scrolling for navigation links
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener('click', function (e) {
+            e.preventDefault();
+            const target = document.querySelector(this.getAttribute('href'));
+            if (target) {
+                target.scrollIntoView({
+                    behavior: 'smooth',
+                    block: 'start'
+                });
+            }
+        });
+    });
+
+    // Add scroll effect to navigation
+    window.addEventListener('scroll', () => {
+        const nav = document.querySelector('nav');
+        if (window.scrollY > 100) {
+            nav.style.background = 'rgba(255, 255, 255, 0.95)';
+            nav.style.backdropFilter = 'blur(10px)';
+        } else {
+            nav.style.background = 'white';
+            nav.style.backdropFilter = 'none';
+        }
+    });
+
+    // Animate elements on scroll
+    const observerOptions = {
+        threshold: 0.1,
+        rootMargin: '0px 0px -50px 0px'
+    };
+
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                entry.target.style.opacity = '1';
+                entry.target.style.transform = 'translateY(0)';
+            }
+        });
+    }, observerOptions);
+
+    // Observe all animated elements
+    document.querySelectorAll('.experience-item, .project-item, .skill-category, .cert-item').forEach(el => {
+        el.style.opacity = '0';
+        el.style.transform = 'translateY(30px)';
+        el.style.transition = 'all 0.6s ease-out';
+        observer.observe(el);
+    });
+</script>
+</body>
 </html>
