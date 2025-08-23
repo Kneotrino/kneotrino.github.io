@@ -233,6 +233,16 @@
             box-shadow: 0 20px 60px rgba(0, 212, 255, 0.2);
         }
 
+        .profile-image .avatar {
+            width: 150px;             /* make width = height for a perfect circle */
+            height: 150px;
+            border-radius: 50%;       /* circular shape */
+            object-fit: cover;        /* crop to fill the circle */
+            border: 4px solid #fff;   /* round border color/size */
+            box-shadow: 0 2px 8px rgba(0,0,0,0.15); /* optional depth */
+        }
+
+
         .profile-image {
             width: 150px;
             height: 150px;
@@ -611,7 +621,10 @@
                     Entertainment.</p>
 
                 <div class="cta-buttons">
-                    <a href="#portfolio" class="btn btn-primary">View My Work</a>
+                    <a href="resume.html" class="btn btn-primary" target="_blank" rel="noopener noreferrer">
+                        View My Work
+                    </a>
+
                     <a href="#contact" class="btn btn-secondary">Get In Touch</a>
                 </div>
 
@@ -635,7 +648,7 @@
             <div class="hero-image">
                 <div class="profile-card">
                     <div class="profile-image">
-                        <i class="fas fa-user"></i>
+                        <img class="avatar" src="img/profile_mini.jpg" alt="profile picture" width="245" height="245">
                     </div>
                     <h3>Java Developer</h3>
                     <p>Passionate about clean code, innovative solutions, and continuous learning.</p>
