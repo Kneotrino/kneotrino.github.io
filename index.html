@@ -234,12 +234,12 @@
         }
 
         .profile-image .avatar {
-            width: 150px;             /* make width = height for a perfect circle */
+            width: 150px; /* make width = height for a perfect circle */
             height: 150px;
-            border-radius: 50%;       /* circular shape */
-            object-fit: cover;        /* crop to fill the circle */
-            border: 4px solid #fff;   /* round border color/size */
-            box-shadow: 0 2px 8px rgba(0,0,0,0.15); /* optional depth */
+            border-radius: 50%; /* circular shape */
+            object-fit: cover; /* crop to fill the circle */
+            border: 4px solid #fff; /* round border color/size */
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15); /* optional depth */
         }
 
 
@@ -741,7 +741,23 @@
             apps, and interactive experiences.</p>
 
         <div class="portfolio-grid">
-
+            <div class="portfolio-item">
+                <div class="portfolio-image">
+                    <div class="portfolio-placeholder">
+                        <i class="fa-solid fa-gamepad"></i>
+                    </div>
+                    <div class="portfolio-overlay">
+                        <a href="gamedev/zero-player/quantum-garden.html" target="_blank" class="portfolio-link">
+                            <i class="fas fa-external-link-alt"></i>
+                        </a>
+                    </div>
+                </div>
+                <div class="portfolio-content"><h3>Quantum Garden</h3>
+                    <p>A visual representation of quantum field fluctuations where particles pop in and out of
+                        existence, creating ever-changing patterns. </p>
+                    <span class="portfolio-tag">Web Game</span>
+                </div>
+            </div>
             <div class="portfolio-item">
                 <div class="portfolio-image">
                     <div class="portfolio-placeholder">
@@ -771,7 +787,8 @@
                 </div>
                 <div class="portfolio-content">
                     <h3>Web Walking Simulator</h3>
-                    <p>Explore vast spaces at a relaxed pace—just walk and take it in</p> <span class="portfolio-tag">Web Game</span>
+                    <p>Explore vast spaces at a relaxed pace—just walk and take it in</p>
+                    <span class="portfolio-tag">Web Game</span>
                 </div>
             </div>
 
