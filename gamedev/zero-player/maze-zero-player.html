@@ -1,0 +1,484 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Endless Maze Generation and Solving</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 20px;
+            background: linear-gradient(135deg, #1e3c72, #2a5298);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            font-family: 'Arial', sans-serif;
+            color: white;
+        }
+
+        .container {
+            text-align: center;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        h1 {
+            margin-bottom: 20px;
+            font-size: 2.5rem;
+            background: linear-gradient(45deg, #ff6b6b, #4ecdc4, #45b7d1);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        .stats {
+            display: flex;
+            gap: 30px;
+            justify-content: center;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .stat {
+            background: rgba(255, 255, 255, 0.15);
+            padding: 15px 25px;
+            border-radius: 15px;
+            backdrop-filter: blur(5px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            transition: all 0.3s ease;
+        }
+
+        .stat:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+        }
+
+        .stat-label {
+            font-size: 0.9rem;
+            opacity: 0.8;
+            margin-bottom: 5px;
+        }
+
+        .stat-value {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #4ecdc4;
+        }
+
+        canvas {
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-radius: 15px;
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.4);
+            background: #000;
+            transition: all 0.3s ease;
+        }
+
+        canvas:hover {
+            transform: scale(1.02);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
+        }
+
+        .controls {
+            margin-top: 20px;
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        button {
+            background: linear-gradient(45deg, #ff6b6b, #4ecdc4);
+            border: none;
+            color: white;
+            padding: 12px 24px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        .speed-control {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: rgba(255, 255, 255, 0.1);
+            padding: 10px 20px;
+            border-radius: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        input[type="range"] {
+            width: 120px;
+        }
+
+        @keyframes pulse {
+            0% { opacity: 0.6; }
+            50% { opacity: 1; }
+            100% { opacity: 0.6; }
+        }
+
+        .status {
+            margin-top: 15px;
+            font-size: 1.2rem;
+            font-weight: bold;
+            animation: pulse 2s infinite;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h1>🌀 Endless Maze Universe</h1>
+
+    <div class="stats">
+        <div class="stat">
+            <div class="stat-label">Mazes Generated</div>
+            <div class="stat-value" id="mazeCount">0</div>
+        </div>
+        <div class="stat">
+            <div class="stat-label">Solutions Found</div>
+            <div class="stat-value" id="solutionCount">0</div>
+        </div>
+        <div class="stat">
+            <div class="stat-label">Current Status</div>
+            <div class="stat-value status" id="status">Initializing...</div>
+        </div>
+    </div>
+
+    <canvas id="mazeCanvas" width="370" height="370"></canvas>
+
+    <div class="controls">
+        <button id="pauseBtn">⏸️ Pause</button>
+        <button id="speedUpBtn">⚡ Speed Up</button>
+        <button id="resetBtn">🔄 Reset</button>
+        <div class="speed-control">
+            <span>🐌</span>
+            <input type="range" id="speedSlider" min="1" max="10" value="5">
+            <span>🚀</span>
+        </div>
+    </div>
+</div>
+
+<script>
+    class EndlessMaze {
+        constructor(canvas) {
+            this.canvas = canvas;
+            this.ctx = canvas.getContext('2d');
+            this.width = 21; // Odd number for proper maze generation
+            this.height = 21;
+            this.cellSize = 18;
+            this.maze = [];
+            this.solution = [];
+            this.currentStep = 0;
+            this.isGenerating = false;
+            this.isSolving = false;
+            this.isPaused = false;
+            this.speed = 50; // Lower = faster
+            this.mazeCount = 0;
+            this.solutionCount = 0;
+
+            this.colors = {
+                wall: '#1a1a1a',
+                path: '#ffffff',
+                start: '#00ff88',
+                end: '#ff4757',
+                solution: '#3742fa',
+                current: '#ffa502',
+                visited: '#70a1ff'
+            };
+
+            this.initMaze();
+            this.startEndlessLoop();
+        }
+
+        initMaze() {
+            this.maze = Array(this.height).fill().map(() => Array(this.width).fill(1));
+            this.solution = [];
+            this.currentStep = 0;
+            this.generationStack = [];
+            this.solutionPath = [];
+            this.visitedCells = new Set();
+        }
+
+        async startEndlessLoop() {
+            while (true) {
+                if (!this.isPaused) {
+                    await this.generateMaze();
+                    await this.solveMaze();
+                    await this.showSolution();
+                    await this.delay(1000);
+                } else {
+                    await this.delay(100);
+                }
+            }
+        }
+
+        async generateMaze() {
+            this.updateStatus('🏗️ Generating Maze...');
+            this.initMaze();
+
+            // Start from random position (must be odd coordinates)
+            let startX = 1 + Math.floor(Math.random() * (this.width - 2) / 2) * 2;
+            let startY = 1 + Math.floor(Math.random() * (this.height - 2) / 2) * 2;
+
+            this.maze[startY][startX] = 0;
+            this.generationStack = [{x: startX, y: startY}];
+
+            while (this.generationStack.length > 0 && !this.isPaused) {
+                let current = this.generationStack[this.generationStack.length - 1];
+                let neighbors = this.getUnvisitedNeighbors(current.x, current.y);
+
+                if (neighbors.length > 0) {
+                    let next = neighbors[Math.floor(Math.random() * neighbors.length)];
+
+                    // Remove wall between current and next
+                    let wallX = current.x + (next.x - current.x) / 2;
+                    let wallY = current.y + (next.y - current.y) / 2;
+
+                    this.maze[wallY][wallX] = 0;
+                    this.maze[next.y][next.x] = 0;
+
+                    this.generationStack.push(next);
+                } else {
+                    this.generationStack.pop();
+                }
+
+                this.drawMaze();
+                await this.delay(this.speed / 2);
+            }
+
+            this.mazeCount++;
+            document.getElementById('mazeCount').textContent = this.mazeCount;
+        }
+
+        getUnvisitedNeighbors(x, y) {
+            let neighbors = [];
+            let directions = [{x: 0, y: -2}, {x: 2, y: 0}, {x: 0, y: 2}, {x: -2, y: 0}];
+
+            for (let dir of directions) {
+                let newX = x + dir.x;
+                let newY = y + dir.y;
+
+                if (newX > 0 && newX < this.width - 1 &&
+                    newY > 0 && newY < this.height - 1 &&
+                    this.maze[newY][newX] === 1) {
+                    neighbors.push({x: newX, y: newY});
+                }
+            }
+
+            return neighbors;
+        }
+
+        async solveMaze() {
+            this.updateStatus('🧠 Solving Maze...');
+
+            // Find random start and end positions
+            let openCells = this.getAllOpenCells();
+            if (openCells.length < 2) {
+                // Fallback if maze generation failed
+                this.solutionPath = [];
+                return;
+            }
+
+            let start = openCells[Math.floor(Math.random() * openCells.length)];
+            let end;
+
+            // Ensure end is different from start and reasonably far away
+            do {
+                end = openCells[Math.floor(Math.random() * openCells.length)];
+            } while (start.x === end.x && start.y === end.y);
+
+            this.startPoint = start;
+            this.endPoint = end;
+            this.solutionPath = await this.findPath(start, end);
+            this.currentStep = 0;
+        }
+
+        getAllOpenCells() {
+            let openCells = [];
+            for (let y = 1; y < this.height - 1; y++) {
+                for (let x = 1; x < this.width - 1; x++) {
+                    if (this.maze[y][x] === 0) {
+                        openCells.push({x, y});
+                    }
+                }
+            }
+            return openCells;
+        }
+
+        async findPath(start, end) {
+            let queue = [{x: start.x, y: start.y, path: [start]}];
+            let visited = new Set();
+            visited.add(`${start.x},${start.y}`);
+
+            let directions = [{x: 0, y: -1}, {x: 1, y: 0}, {x: 0, y: 1}, {x: -1, y: 0}];
+
+            while (queue.length > 0 && !this.isPaused) {
+                let current = queue.shift();
+
+                if (current.x === end.x && current.y === end.y) {
+                    return current.path;
+                }
+
+                for (let dir of directions) {
+                    let newX = current.x + dir.x;
+                    let newY = current.y + dir.y;
+                    let key = `${newX},${newY}`;
+
+                    if (newX >= 0 && newX < this.width &&
+                        newY >= 0 && newY < this.height &&
+                        this.maze[newY][newX] === 0 &&
+                        !visited.has(key)) {
+
+                        visited.add(key);
+                        queue.push({
+                            x: newX,
+                            y: newY,
+                            path: [...current.path, {x: newX, y: newY}]
+                        });
+                    }
+                }
+
+                // Visual feedback during pathfinding
+                this.visitedCells.add(`${current.x},${current.y}`);
+                this.drawMaze();
+                await this.delay(this.speed / 4);
+            }
+
+            return []; // No path found
+        }
+
+        async showSolution() {
+            this.updateStatus('✨ Showing Solution...');
+            this.visitedCells.clear();
+
+            for (let i = 0; i < this.solutionPath.length && !this.isPaused; i++) {
+                this.currentStep = i;
+                this.drawMaze();
+                await this.delay(this.speed);
+            }
+
+            this.solutionCount++;
+            document.getElementById('solutionCount').textContent = this.solutionCount;
+
+            // Show complete solution for a moment
+            await this.delay(2000);
+        }
+
+        drawMaze() {
+            this.ctx.fillStyle = this.colors.wall;
+            this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+
+            // Draw maze
+            for (let y = 0; y < this.height; y++) {
+                for (let x = 0; x < this.width; x++) {
+                    if (this.maze[y][x] === 0) {
+                        this.ctx.fillStyle = this.colors.path;
+                        this.ctx.fillRect(x * this.cellSize, y * this.cellSize,
+                            this.cellSize, this.cellSize);
+                    }
+                }
+            }
+
+            // Draw visited cells during pathfinding
+            this.ctx.fillStyle = this.colors.visited;
+            for (let cell of this.visitedCells) {
+                let [x, y] = cell.split(',').map(Number);
+                this.ctx.fillRect(x * this.cellSize + 2, y * this.cellSize + 2,
+                    this.cellSize - 4, this.cellSize - 4);
+            }
+
+            // Draw solution path
+            if (this.solutionPath.length > 0) {
+                this.ctx.fillStyle = this.colors.solution;
+                for (let i = 0; i <= this.currentStep && i < this.solutionPath.length; i++) {
+                    let cell = this.solutionPath[i];
+                    this.ctx.fillRect(cell.x * this.cellSize + 3, cell.y * this.cellSize + 3,
+                        this.cellSize - 6, this.cellSize - 6);
+                }
+
+                // Highlight current position
+                if (this.currentStep < this.solutionPath.length) {
+                    let current = this.solutionPath[this.currentStep];
+                    this.ctx.fillStyle = this.colors.current;
+                    this.ctx.fillRect(current.x * this.cellSize + 1, current.y * this.cellSize + 1,
+                        this.cellSize - 2, this.cellSize - 2);
+                }
+
+                // Mark start and end
+                if (this.solutionPath.length > 0) {
+                    let start = this.solutionPath[0];
+                    let end = this.solutionPath[this.solutionPath.length - 1];
+
+                    this.ctx.fillStyle = this.colors.start;
+                    this.ctx.fillRect(start.x * this.cellSize, start.y * this.cellSize,
+                        this.cellSize, this.cellSize);
+
+                    this.ctx.fillStyle = this.colors.end;
+                    this.ctx.fillRect(end.x * this.cellSize, end.y * this.cellSize,
+                        this.cellSize, this.cellSize);
+                }
+            }
+        }
+
+        updateStatus(status) {
+            document.getElementById('status').textContent = status;
+        }
+
+        delay(ms) {
+            return new Promise(resolve => setTimeout(resolve, ms));
+        }
+
+        pause() {
+            this.isPaused = !this.isPaused;
+            document.getElementById('pauseBtn').textContent = this.isPaused ? '▶️ Resume' : '⏸️ Pause';
+        }
+
+        speedUp() {
+            this.speed = Math.max(1, this.speed - 10);
+            document.getElementById('speedSlider').value = 11 - (this.speed / 5);
+        }
+
+        reset() {
+            this.mazeCount = 0;
+            this.solutionCount = 0;
+            document.getElementById('mazeCount').textContent = '0';
+            document.getElementById('solutionCount').textContent = '0';
+            this.initMaze();
+            this.drawMaze();
+        }
+
+        setSpeed(value) {
+            this.speed = (11 - value) * 5;
+        }
+    }
+
+    // Initialize the maze
+    const canvas = document.getElementById('mazeCanvas');
+    const maze = new EndlessMaze(canvas);
+
+    // Event listeners
+    document.getElementById('pauseBtn').addEventListener('click', () => maze.pause());
+    document.getElementById('speedUpBtn').addEventListener('click', () => maze.speedUp());
+    document.getElementById('resetBtn').addEventListener('click', () => maze.reset());
+    document.getElementById('speedSlider').addEventListener('input', (e) => maze.setSpeed(e.target.value));
+</script>
+</body>
+</html>
