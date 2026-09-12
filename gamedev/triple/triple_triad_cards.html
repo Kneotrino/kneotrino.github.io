@@ -128,7 +128,9 @@
     .preview-label{font-family:var(--font-ui);font-size:9px;letter-spacing:3px;text-transform:uppercase;color:var(--text-dim);margin-bottom:-16px;text-align:center}
     .preview-pair{display:flex;gap:40px;align-items:flex-start; padding: 20px;}
     .face-wrap{display:flex;flex-direction:column;align-items:center;gap:10px}
-    .face-label{font-family:var(--font-ui);font-size:8px;letter-spacing:2px;text-transform:uppercase;color:var(--text-dim)}
+    .face-label{display:flex;align-items:center;justify-content:center;color:var(--text-dim)}
+    .face-label svg{width:18px;height:18px;display:block;fill:none;stroke:currentColor;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round}
+    .face-label.front-mark svg{fill:currentColor;stroke:none}
     /* CARD */
     .tt-card{
       width:var(--card-w);height:var(--card-h);border-radius:var(--card-r);
@@ -139,10 +141,7 @@
     .card-art{flex:1;position:relative;overflow:hidden;border-radius:var(--card-r) var(--card-r) 0 0}
     .card-art-inner{width:100%;height:100%;position:relative}
     .art-bg{position:absolute;inset:0}
-    /* Render image with hard-light to merge with the SVG colors in the background, or luminosity */
-    .art-img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;mix-blend-mode:hard-light;opacity:.85}
-    .art-overlay{position:absolute;inset:0;pointer-events:none}
-    .art-svg{position:absolute;inset:0;width:100%;height:100%}
+    .art-img{position:absolute;inset:0;width:100%;height:100%;object-fit:contain}
     .tt-card.el-chaos .art-bg{background:linear-gradient(160deg,#1a0000 0%,#4a0a00 50%,#7a1500 100%)}
     .tt-card.el-chaos{border-color:rgba(255,68,68,.3)}
     .tt-card.el-order .art-bg{background:linear-gradient(160deg,#001020 0%,#00283c 50%,#004060 100%)}
@@ -181,6 +180,16 @@
       font-family:var(--font-ui);font-size:8px;font-weight:700;letter-spacing:1px;
       background:linear-gradient(135deg,#ffd700,#ffaa00);color:#000;
     }
+    .card-side-logo{
+      position:absolute;top:34px;left:12px;z-index:5;width:14px;height:14px;
+      color:rgba(255,255,255,.75);display:flex;align-items:center;justify-content:center;
+    }
+    .card-side-logo svg{width:100%;height:100%;display:block;fill:none;stroke:currentColor;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round}
+    .card-side-logo.front-logo svg{fill:currentColor;stroke:none}
+    .card-back-face .card-side-logo{color:#fff;filter:none}
+    .back-logo{display:none}
+    .card-back-face .front-logo{display:none}
+    .card-back-face .back-logo{display:flex}
     .card-el-icon{
       position:absolute;bottom:6px;right:10px;z-index:5;width:20px;height:20px;
       border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;
@@ -201,6 +210,7 @@
     .el-void  .stat-num,.el-void  .corner-stat,.el-void  .card-badge{color:var(--void-hi)}
     .card-frame{position:absolute;inset:3px;border-radius:calc(var(--card-r) - 1px);border:1px solid rgba(255,255,255,.07);pointer-events:none;z-index:2}
     .card-back-face{filter:invert(1)}
+    .card-back-face .art-img{filter:invert(1)}
     .print-safe,
     .print-safe *{
       animation:none!important;
@@ -295,15 +305,15 @@
     </div>
 
     <div class="sidebar-divider"></div>
-    <p class="section-title">Card Art (optional image)</p>
+    <p class="section-title">Card Art (PNG)</p>
     <div class="art-upload-area">
-      <input type="file" accept="image/*" id="art-file" onchange="loadArt(event)" />
+      <input type="file" accept="image/png" id="art-file" onchange="loadArt(event)" />
       <span class="upload-icon">&#128444;</span>
-      <div>Drop or click to upload image</div>
-      <div style="font-size:10px;opacity:.5;margin-top:4px;">If empty, element art is generated</div>
+      <div>Drop or click to upload PNG</div>
+      <div style="font-size:10px;opacity:.5;margin-top:4px;">Transparent backgrounds are preserved</div>
       <img id="art-preview-thumb" alt="preview" />
     </div>
-    <button class="clear-btn" onclick="clearArt()">&#10005; Remove image &mdash; use generated art</button>
+    <button class="clear-btn" onclick="clearArt()">&#10005; Remove image</button>
 
   </aside>
 
@@ -312,11 +322,15 @@
     <div class="preview-pair" id="export-area">
       <div class="face-wrap">
         <div id="card-front" class="tt-card el-chaos"></div>
-        <span class="face-label" data-html2canvas-ignore="true">Front</span>
+        <span class="face-label front-mark" data-html2canvas-ignore="true" aria-label="Front" title="Front">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m12 2 2.7 7.3L22 12l-7.3 2.7L12 22l-2.7-7.3L2 12l7.3-2.7L12 2Z"/></svg>
+        </span>
       </div>
       <div class="face-wrap">
         <div id="card-back" class="tt-card el-chaos card-back-face"></div>
-        <span class="face-label" data-html2canvas-ignore="true">Back (inverted)</span>
+        <span class="face-label" data-html2canvas-ignore="true" aria-label="Back" title="Back">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 4H4v3M4 4l6 6M17 20h3v-3m0 3-6-6M4 17v3h3m-3 0 6-6M20 7V4h-3m3 0-6 6"/></svg>
+        </span>
       </div>
     </div>
   </main>
@@ -454,21 +468,20 @@ function buildCardHTML() {
   const { name, label, type, element, rarity, stats } = state;
   const cfg = elCfg[element];
 
-  let artContent = '';
-  // Put SVG first so it is rendered in the background
-  artContent += `<svg class="art-svg" viewBox="0 0 220 200" xmlns="http://www.w3.org/2000/svg"><use href="#${cfg.artId}"/></svg>`;
-
-  // Then put image on top. The CSS mix-blend-mode: luminosity and opacity will blend it with the SVG
-  if (state.artDataUrl) {
-    artContent += `<img class="art-img" src="${state.artDataUrl}" alt="card art" crossorigin="anonymous" />`;
-  }
-  
-  artContent += `<div class="art-overlay" style="background:linear-gradient(to bottom,transparent 50%,rgba(0,0,0,.7) 100%);"></div>`;
+  const artContent = state.artDataUrl
+    ? `<img class="art-img" src="${state.artDataUrl}" alt="card art" crossorigin="anonymous" />`
+    : '';
 
   return `
     <div class="card-frame"></div>
     <div class="card-rarity-badge">${rarity}</div>
     <div class="card-badge">${type}</div>
+    <div class="card-side-logo front-logo" aria-label="Front side">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m12 2 2.7 7.3L22 12l-7.3 2.7L12 22l-2.7-7.3L2 12l7.3-2.7L12 2Z"/></svg>
+    </div>
+    <div class="card-side-logo back-logo" aria-label="Back side">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 4H4v3M4 4l6 6M17 20h3v-3m0 3-6-6M4 17v3h3m-3 0 6-6M20 7V4h-3m3 0-6 6"/></svg>
+    </div>
     <div class="card-art">
       <div class="card-art-inner">
         <div class="art-bg"></div>
@@ -500,7 +513,7 @@ function buildCardHTML() {
 function render() {
   const front = document.getElementById('card-front');
   const back  = document.getElementById('card-back');
-  front.className = `tt-card el-${state.element}`;
+  front.className = `tt-card el-${state.element} card-front-face`;
   back.className  = `tt-card el-${state.element} card-back-face`;
   const html = buildCardHTML();
   front.innerHTML = html;
