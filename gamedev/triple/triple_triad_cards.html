@@ -95,7 +95,7 @@
       font-size:9px;letter-spacing:2px;text-transform:uppercase;cursor:pointer;
       text-align:center;font-weight:600
     }
-    .el-btn .el-icon{font-size:20px;display:block;margin-bottom:4px}
+    .el-btn .el-icon{width:20px;height:20px;display:block;margin:0 auto 4px;fill:currentColor}
     .el-btn.chaos{--c:var(--chaos-hi)}
     .el-btn.order{--c:var(--order-hi)}
     .el-btn.void{--c:var(--void-hi)}
@@ -176,8 +176,10 @@
     .card-el-icon{
       position:absolute;bottom:6px;right:10px;z-index:5;width:20px;height:20px;
       border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;
-      background:rgba(0,0,0,.55);border:1px solid rgba(255,255,255,.1)
+      color:rgba(255,255,255,.9);background:rgba(0,0,0,.55);border:1px solid rgba(255,255,255,.1)
     }
+    .card-el-icon svg{width:12px;height:12px;fill:currentColor}
+    .el-void .card-el-icon{color:var(--void-hi)}
     .card-stats{
       position:relative;z-index:3;display:flex;align-items:center;justify-content:space-between;
       padding:8px 12px 10px;background:rgba(0,0,0,.6);border-top:1px solid rgba(255,255,255,.06)
@@ -249,13 +251,13 @@
     <p class="section-title">Element</p>
     <div class="element-picker">
       <button class="el-btn chaos active" data-el="chaos" onclick="setElement('chaos')">
-        <span class="el-icon">&#128293;</span>Chaos
+      <svg class="el-icon" viewBox="0 0 24 24" aria-hidden="true"><use href="#chaos-icon"/></svg>Chaos
       </button>
       <button class="el-btn order" data-el="order" onclick="setElement('order')">
-        <span class="el-icon">&#9881;</span>Order
+      <svg class="el-icon" viewBox="0 0 24 24" aria-hidden="true"><use href="#order-icon"/></svg>Order
       </button>
       <button class="el-btn void" data-el="void" onclick="setElement('void')">
-        <span class="el-icon">&#127761;</span>Void
+      <svg class="el-icon" viewBox="0 0 24 24" aria-hidden="true"><use href="#void-icon"/></svg>Void
       </button>
     </div>
 
@@ -311,8 +313,20 @@
 </div>
 
 <!-- SVG pattern defs (hidden) -->
-<svg style="display:none" xmlns="http://www.w3.org/2000/svg">
+<svg style="position:absolute;width:0;height:0;overflow:hidden" aria-hidden="true" xmlns="http://www.w3.org/2000/svg">
   <defs>
+    <symbol id="chaos-icon" viewBox="0 0 24 24">
+      <path fill="currentColor" d="m12 1.5 2.1 6.1 5.7-2.6-2.6 5.7 6.1 2.1-6.1 2.1 2.6 5.7-5.7-2.6-2.1 6.1-2.1-6.1-5.7 2.6 2.6-5.7-6.1-2.1 6.1-2.1-2.6-5.7 5.7 2.6L12 1.5Z"/>
+      <circle cx="12" cy="12" r="3.2" fill="#0b0d18"/>
+      <circle cx="12" cy="12" r="1.3" fill="currentColor"/>
+    </symbol>
+    <symbol id="order-icon" viewBox="0 0 24 24">
+      <path fill-rule="evenodd" d="M9.7 2h4.6l.5 2.3c.5.2 1 .4 1.5.7l2-1.2 3.3 3.3-1.2 2c.3.5.5 1 .7 1.5l2.3.5v4.6l-2.3.5c-.2.5-.4 1-.7 1.5l1.2 2-3.3 3.3-2-1.2c-.5.3-1 .5-1.5.7l-.5 2.3H9.7l-.5-2.3c-.5-.2-1-.4-1.5-.7l-2 1.2-3.3-3.3 1.2-2c-.3-.5-.5-1-.7-1.5L.6 15.7v-4.6l2.3-.5c.2-.5.4-1 .7-1.5l-1.2-2 3.3-3.3 2 1.2c.5-.3 1-.5 1.5-.7L9.7 2Zm2.3 6.5a4.9 4.9 0 1 0 0 9.8 4.9 4.9 0 0 0 0-9.8Z" clip-rule="evenodd"/>
+    </symbol>
+    <symbol id="void-icon" viewBox="0 0 24 24">
+      <path fill="currentColor" fill-rule="evenodd" d="M12 1.5a10.5 10.5 0 1 1 0 21 10.5 10.5 0 1 1 0-21Zm0 5a5.5 5.5 0 1 0 0 11 5.5 5.5 0 1 0 0-11Z"/>
+      <path fill="currentColor" d="M3.2 5.8 5 5l-.8 1.8L3.2 5.8Zm15.8 12.4 1.8-.8-.8 1.8-1-.1Z" opacity=".8"/>
+    </symbol>
     <!-- CHAOS (3 body of planet) -->
     <g id="chaos-art" transform="translate(22, 18) scale(0.8)">
       <!-- Orbit paths -->
@@ -405,9 +419,24 @@ const state = {
 };
 
 const elCfg = {
-  chaos: { icon: '🔥', color: '#ff4444', artId: 'chaos-art' },
-  order: { icon: '⚙',   color: '#38bdf8', artId: 'order-art' },
-  void:  { icon: '🌑', color: '#a855f7', artId: 'void-art'  }
+  chaos: {
+    iconId: 'chaos-icon',
+    iconMarkup: '<path fill="currentColor" d="m12 1.5 2.1 6.1 5.7-2.6-2.6 5.7 6.1 2.1-6.1 2.1 2.6 5.7-5.7-2.6-2.1 6.1-2.1-6.1-5.7 2.6 2.6-5.7-6.1-2.1 6.1-2.1-2.6-5.7 5.7 2.6L12 1.5Z"/><circle cx="12" cy="12" r="3.2" fill="#0b0d18"/><circle cx="12" cy="12" r="1.3" fill="currentColor"/>',
+    color: '#ff4444',
+    artId: 'chaos-art'
+  },
+  order: {
+    iconId: 'order-icon',
+    iconMarkup: '<path fill="currentColor" fill-rule="evenodd" d="M9.7 2h4.6l.5 2.3c.5.2 1 .4 1.5.7l2-1.2 3.3 3.3-1.2 2c.3.5.5 1 .7 1.5l2.3.5v4.6l-2.3.5c-.2.5-.4 1-.7 1.5l1.2 2-3.3 3.3-2-1.2c-.5.3-1 .5-1.5.7l-.5 2.3H9.7l-.5-2.3c-.5-.2-1-.4-1.5-.7l-2 1.2-3.3-3.3 1.2-2c-.3-.5-.5-1-.7-1.5L.6 15.7v-4.6l2.3-.5c.2-.5.4-1 .7-1.5l-1.2-2 3.3-3.3 2 1.2c.5-.3 1-.5 1.5-.7L9.7 2Zm2.3 6.5a4.9 4.9 0 1 0 0 9.8 4.9 4.9 0 0 0 0-9.8Z" clip-rule="evenodd"/>',
+    color: '#38bdf8',
+    artId: 'order-art'
+  },
+  void: {
+    iconId: 'void-icon',
+    iconMarkup: '<path fill="currentColor" fill-rule="evenodd" d="M12 1.5a10.5 10.5 0 1 1 0 21 10.5 10.5 0 1 1 0-21Zm0 5a5.5 5.5 0 1 0 0 11 5.5 5.5 0 1 0 0-11Z"/><path fill="currentColor" d="M3.2 5.8 5 5l-.8 1.8L3.2 5.8Zm15.8 12.4 1.8-.8-.8 1.8-1-.1Z" opacity=".8"/>',
+    color: '#a855f7',
+    artId: 'void-art'
+  }
 };
 
 function buildCardHTML() {
@@ -438,7 +467,7 @@ function buildCardHTML() {
         <div class="card-name">${name}</div>
         <div class="card-subtext">${label}</div>
       </div>
-      <div class="card-el-icon">${cfg.icon}</div>
+      <div class="card-el-icon"><svg viewBox="0 0 24 24" aria-hidden="true">${cfg.iconMarkup}</svg></div>
       <div class="corner-stats">
         <div class="corner-stat top">${stats.top}</div>
         <div class="corner-stat left">${stats.left}</div>
@@ -572,13 +601,23 @@ function randomizeStats() {
 function saveImage(customFilename) {
   return new Promise((resolve) => {
     const exportNode = document.getElementById('export-area');
+    const exportScale = 10;
+    const exportWidth = exportNode.offsetWidth;
+    const exportHeight = exportNode.offsetHeight;
     const labels = exportNode.querySelectorAll('.face-label');
     exportNode.classList.add('print-safe');
     labels.forEach(l => l.style.display = 'none');
     
     domtoimage.toPng(exportNode, { 
+      width: exportWidth * exportScale,
+      height: exportHeight * exportScale,
       bgcolor: 'transparent',
-      style: { padding: '20px', background: 'transparent' }
+      style: {
+        padding: '20px',
+        background: 'transparent',
+        transform: `scale(${exportScale})`,
+        transformOrigin: 'top left'
+      }
     })
     .then(function (dataUrl) {
       const link = document.createElement('a');
@@ -629,7 +668,8 @@ async function batchGenerate() {
     
     // Give browser time to visually update before capture
     await new Promise(r => setTimeout(r, 150));
-    await saveImage(`Random_${i+1}_${state.name.replace(' ', '_')}`);
+    const cardType = (state.type || 'Card').replace(/[^\w-]+/g, '_').replace(/^_+|_+$/g, '');
+    await saveImage(`${cardType || 'Card'}_${i+1}`);
   }
 }
 
