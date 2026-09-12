@@ -79,6 +79,14 @@
       font-size:14px;outline:none
     }
     .form-input:focus{border-color:var(--accent)}
+    .input-action-row{display:flex;gap:8px;align-items:center}
+    .input-action-row .form-input{flex:1;min-width:0}
+    .btn-random-name{
+      flex:0 0 auto;padding:9px 10px;border:1px solid var(--accent);border-radius:8px;
+      background:rgba(124,127,241,.12);color:var(--text);font-family:var(--font-ui);
+      font-size:10px;cursor:pointer;font-weight:600;letter-spacing:.5px
+    }
+    .btn-random-name:hover{background:var(--accent);color:#fff}
     .stats-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
     .stat-wrap{display:flex;flex-direction:column;gap:4px}
     .stat-wrap label{font-size:10px;color:var(--text-dim);letter-spacing:1px;text-transform:uppercase}
@@ -236,7 +244,10 @@
     <p class="section-title">Identity</p>
     <div class="form-group">
       <label class="form-label" for="f-name">Card Name</label>
-      <input class="form-input" id="f-name" type="text" placeholder="e.g. Bahamut" maxlength="20" value="Unnamed" />
+      <div class="input-action-row">
+        <input class="form-input" id="f-name" type="text" placeholder="e.g. Bahamut" maxlength="20" value="Unnamed" />
+        <button class="btn-random-name" type="button" onclick="randomizeName()" title="Generate a random card name">&#127922; Random</button>
+      </div>
     </div>
     <div class="form-group">
       <label class="form-label" for="f-label">Sub Label</label>
@@ -597,6 +608,17 @@ function randomizeStats() {
   render();
 }
 
+function randomizeName() {
+  const prefixes = ['Dark', 'Light', 'Void', 'Crystal', 'Iron', 'Astral', 'Elder', 'Feral', 'Crimson', 'Azure'];
+  const nouns = ['Dragon', 'Knight', 'Beast', 'Mage', 'Warden', 'Soul', 'Fiend', 'Serpent', 'Phantom', 'Titan'];
+  const prefix = prefixes[Math.floor(Math.random() * prefixes.length)];
+  const noun = nouns[Math.floor(Math.random() * nouns.length)];
+
+  state.name = `${prefix} ${noun}`;
+  document.getElementById('f-name').value = state.name;
+  render();
+}
+
 // Image export via dom-to-image
 function saveImage(customFilename) {
   return new Promise((resolve) => {
@@ -649,9 +671,6 @@ async function batchGenerate() {
 
   const elements = ['chaos', 'order', 'void'];
   const rarities = ['A', 'S', 'SR', 'SSR', 'SSR+'];
-  const prefixes = ['Dark', 'Light', 'Void', 'Crystal', 'Iron', 'Astral', 'Elder', 'Feral', 'Crimson', 'Azure'];
-  const nouns = ['Dragon', 'Knight', 'Beast', 'Mage', 'Warden', 'Soul', 'Fiend', 'Serpent', 'Phantom', 'Titan'];
-  
   for (let i = 0; i < count; i++) {
     const el = elements[Math.floor(Math.random() * elements.length)];
     setElement(el);
@@ -659,10 +678,7 @@ async function batchGenerate() {
     const rar = rarities[Math.floor(Math.random() * rarities.length)];
     setRarity(rar);
     
-    const p = prefixes[Math.floor(Math.random() * prefixes.length)];
-    const n = nouns[Math.floor(Math.random() * nouns.length)];
-    state.name = `${p} ${n}`;
-    document.getElementById('f-name').value = state.name;
+    randomizeName();
     
     randomizeStats(); // automatically calls render()
     
